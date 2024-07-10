@@ -1,3 +1,4 @@
+package abgaben;
 interface Calc {
     int add(int x, int y);
     int neg(int x);
