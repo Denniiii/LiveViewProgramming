@@ -10,29 +10,35 @@ import java.util.stream.IntStream;
 
 Clerk.markdown(STR.
 """
-# Nim Tirtle View
+# Nim Turtle View
 
 _Dennis Diener, Technische Hochschule Mittelhessen_
 
 ## Implementierung der `equals` und `hashCode` Methoden
 
-- `equals`
+### 1. Hashcode Methode
+
+Mit der `hashcode()` Methode wird der Hashcode aus dem Inhalt der einzelnen Reihen berechnet.
+> Dadurch entsteht selbst bei unterschiedlicher Anordnung der Reihen der gleiche Hashcode.
+
+```java	
+\{Text.cutOut("./Nim.java", "// hashCode")}
+```
+
+Dabei wird das Array kopiert und mit einem Quicksort Algorithmus aufsteigend sortiert, danach wird pro Reihe der Wert mit einer Zehnerpotenz multipliziert und aufsummiert, das aufsummierte Ergebnis ist dann der Hashcode.
+
+### 2. Equals Methode
 
 In der Methode werden 5 Abfragen getätigt:
 Frage | Umsetzung
--------|----------
+------|----------
 Ist das Objekt `null`? | `if (other == null) return false;`
 Vergleichen wir das gleiche Objekt? | `if (other == this) return true;`
 Sind es gleiche Klassen? | `if (other.getClass() != getClass()) return false;`
 Casting | `Nim that = (Nim)other;`
-Haben die Objekte den selben Inhalt? | `return Arrays.equals(rows, that.rows);`
+Haben die Objekte den selben Inhalt? | `return this.hashCode() == other.hashCode();`
 
 Mit diesen Fragen kann man in der JShell Objekte mit dem Befehl: `.equals(**Objekt**)` aufrufbar.
-
-- `hashCode`
-
-Mit der HashCode Methode kann man einfach und schnell, in der JShell, den HashCode einer Nim Instanz wiedergeben: `.hashCode()`
-
 
 ---
 
@@ -42,6 +48,33 @@ Die Klasse NimView erweitert Nim und erstellt zuerst eine Turtle-Leinwand, wenn 
 
         
 """);
+
+// hashCode
+@Override
+boolean swapped;
+        do {
+            swapped = false;
+            for (int i = 0; i < sortedRows.length - 1; i++) {                   //Sortiere aufsteigend bsp. 1 2 3 4 (QuickSort)
+                if (sortedRows[i] > sortedRows[i + 1]) {
+                    int temp = sortedRows[i];
+                    sortedRows[i] = sortedRows[i + 1];
+                    sortedRows[i + 1] = temp;
+                    swapped = true;
+                }
+            }
+        } while (swapped);
+        int hash = 0;                                                           //Hashwert intialisieren
+        for (int i = 0; i < sortedRows.length; i++) {                           //Berechne den Hashwert
+            hash += sortedRows[i] * Math.pow(10, i);                            //Nutze die Zehnerpotenz um die Reihenfolge zu speichern
+        }
+        return hash;
+// hashCode
+
+
+/*-------------------------------------------------------------------------------------------------------------------------------*/
+
+
+// Eigentlicher Code 
 
 class NimView extends Nim {
     Turtle turtle = new Turtle(400, 400);
@@ -169,12 +202,32 @@ class Nim implements NimGame {
         if (other == this) return true;                                         //Bin ich es selbst?- Ich ja
         if (other.getClass() != getClass()) return false;                       //Andere Klasse?    - Klasse gleich?
         Nim that = (Nim)other;                                                  //Casting           - 
-        return Arrays.equals(rows, that.rows);                                  //Vergleich         - Was definiert Gleichheit?
+        return this.hashCode() == other.hashCode();                             //Vergleichen
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(rows);
+        int sortedRows[] = new int[rows.length];                                //Kopiere das Array
+        for (int i = 0; i < rows.length; i++) {                                 
+            sortedRows[i] = rows[i];
+        }
+        boolean swapped;
+        do {
+            swapped = false;
+            for (int i = 0; i < sortedRows.length - 1; i++) {                       //Sortiere aufsteigend bsp. 1 2 3 4 (QuickSort)
+                if (sortedRows[i] > sortedRows[i + 1]) {
+                    int temp = sortedRows[i];
+                    sortedRows[i] = sortedRows[i + 1];
+                    sortedRows[i + 1] = temp;
+                    swapped = true;
+                }
+            }
+        } while (swapped);
+        int hash = 0;                                                           //Hashwert intialisieren
+        for (int i = 0; i < sortedRows.length; i++) {                           //Berechne den Hashwert
+            hash += sortedRows[i] * Math.pow(10, i);                            //Nutze die Zehnerpotenz um die Reihenfolge zu speichern
+        }
+        return hash;
     }
 }
 
@@ -213,3 +266,38 @@ boolean simulateGame(int... maxN) {
 assert IntStream.range(0,100).allMatch(i -> simulateGame(3,4,5));
 assert IntStream.range(0,100).allMatch(i -> simulateGame(3,4,6,8));
 
+/* // Beispielhaftes Spiel über JShell
+jshell> Nim n = Nim.of(2,3,4)
+n ==>
+I I
+I I I
+I I I I
+jshell> n = n.play(n.bestMove())
+n ==>
+I I
+I I I
+I
+jshell> n = n.play(Move.of(2,1))
+n ==>
+I I
+I I I
+jshell> n = n.play(n.bestMove())
+n ==>
+I I
+I I
+jshell> n = n.play(Move.of(1,1))
+n ==>
+I I
+I
+jshell> n = n.play(n.bestMove())
+n ==>
+I
+I
+jshell> n = n.play(Move.of(1,1))
+n ==>
+I
+jshell> n = n.play(n.bestMove())
+n ==>
+jshell> n.isGameOver()
+$25 ==> true
+*/

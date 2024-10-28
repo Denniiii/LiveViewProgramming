@@ -6,6 +6,74 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+Clerk.markdown(STR.
+"""
+# Nim Turtle View
+
+_Dennis Diener, Technische Hochschule Mittelhessen_
+
+## Implementierung der `equals` und `hashCode` Methoden
+
+### 1. Hashcode Methode
+
+Mit der `hashcode()` Methode wird der Hashcode aus dem Inhalt der einzelnen Reihen berechnet.
+> Dadurch entsteht selbst bei unterschiedlicher Anordnung der Reihen der gleiche Hashcode.
+
+```java	
+\{Text.cutOut("./Nim.java", "// hashCode")}
+```
+
+Dabei wird das Array kopiert und mit einem Quicksort Algorithmus aufsteigend sortiert, danach wird pro Reihe der Wert mit einer Zehnerpotenz multipliziert und aufsummiert, das aufsummierte Ergebnis ist dann der Hashcode.
+
+### 2. Equals Methode
+
+In der Methode werden 5 Abfragen getätigt:
+Frage | Umsetzung
+------|----------
+Ist das Objekt `null`? | `if (other == null) return false;`
+Vergleichen wir das gleiche Objekt? | `if (other == this) return true;`
+Sind es gleiche Klassen? | `if (other.getClass() != getClass()) return false;`
+Casting | `Nim that = (Nim)other;`
+Haben die Objekte den selben Inhalt? | `return this.hashCode() == other.hashCode();`
+
+Mit diesen Fragen kann man in der JShell Objekte mit dem Befehl: `.equals(**Objekt**)` aufrufbar.
+
+---
+
+## Implementierung von View 
+
+Die Klasse NimView erweitert Nim und erstellt zuerst eine Turtle-Leinwand, wenn eine Nim-Spiel gestartet wird, danach kann man mit `.show()` den aktuellen Spielstand anzeigen lassen.
+
+        
+""");
+
+// hashCode
+@Override
+boolean swapped;
+        do {
+            swapped = false;
+            for (int i = 0; i < sortedRows.length - 1; i++) {                   //Sortiere aufsteigend bsp. 1 2 3 4 (QuickSort)
+                if (sortedRows[i] > sortedRows[i + 1]) {
+                    int temp = sortedRows[i];
+                    sortedRows[i] = sortedRows[i + 1];
+                    sortedRows[i + 1] = temp;
+                    swapped = true;
+                }
+            }
+        } while (swapped);
+        int hash = 0;                                                           //Hashwert intialisieren
+        for (int i = 0; i < sortedRows.length; i++) {                           //Berechne den Hashwert
+            hash += sortedRows[i] * Math.pow(10, i);                            //Nutze die Zehnerpotenz um die Reihenfolge zu speichern
+        }
+        return hash;
+// hashCode
+
+
+/*-------------------------------------------------------------------------------------------------------------------------------*/
+
+
+// Eigentlicher Code 
+
 class Move {
     final int row, number;
     static Move of(int row, int number) {
@@ -18,29 +86,6 @@ class Move {
     }
     public String toString() {
         return "(" + row + ", " + number + ")";
-    }
-}
-
-class NimView {
-    Turtle turtle = new Turtle(400, 400);
-
-    private Turtle holz(Turtle t) {                                                     //Streichholz zeichnen und zum nächsten Anfang gehen
-        return t.forward(20).penUp().left(90).forward(20).left(90).forward(20).left(180).penDown(); 
-    }
-
-    private Turtle jump(Turtle t, int i) {
-        return t.penUp().right(90).forward(i * 20).left(90).forward(40).penDown();
-    }
-
-    public void show() {
-        turtle.reset();
-        turtle.penUp().left(90).forward(150).left(90).forward(150).left(90).penDown();//Startposition
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < rows[i]; j++) {
-                holz(turtle);
-            }
-            jump(turtle, rows[i]);
-        }
     }
 }
 
@@ -66,7 +111,8 @@ class Nim implements NimGame {
         return new Nim(rows);
     }
     private Nim(int ... rows) {
-        if (rows.length > 5 || Arrays.stream(rows).anyMatch(n -> n < 0 || n > 7)) {//Hier soll man nur eine gewisse anzahl an Streichholz"reihen" und "Streichhölzer" benutzen dürfen
+        if (rows.length > 5 || Arrays.stream(rows).anyMatch(n -> n < 0 || n > 7)) {
+            //Hier soll man nur eine gewisse anzahl an Streichholz"reihen" und "Streichhölzer" benutzen dürfen
             throw new IllegalArgumentException("Ein Nim-Spiel enthält maximal fünf Reihen und jede Reihe hat maximal sieben 'Streichhölzer'.");
         }
         assert rows.length >= 1;
@@ -110,6 +156,8 @@ class Nim implements NimGame {
         String s = "";
         for(int n : rows) s += "\n" + "I ".repeat(n);
         return s;
+        NimView view = new NimView();
+        view.show();
     }
 
     @Override
@@ -130,7 +178,7 @@ class Nim implements NimGame {
         boolean swapped;
         do {
             swapped = false;
-            for (int i = 0; i < sortedRows.length - 1; i++) {                       //Sortiere aufsteigend bsp. 1 2 3 4 (QuickSort)
+            for (int i = 0; i < sortedRows.length - 1; i++) {                   //Sortiere aufsteigend bsp. 1 2 3 4 (QuickSort)
                 if (sortedRows[i] > sortedRows[i + 1]) {
                     int temp = sortedRows[i];
                     sortedRows[i] = sortedRows[i + 1];
@@ -144,6 +192,27 @@ class Nim implements NimGame {
             hash += sortedRows[i] * Math.pow(10, i);                            //Nutze die Zehnerpotenz um die Reihenfolge zu speichern
         }
         return hash;
+    }
+}
+
+class NimView {
+    private Turtle holz(Turtle t) {                                             //Streichholz zeichnen und zum nächsten Anfang gehen
+        return t.forward(20).penUp().left(90).forward(20).left(90).forward(20).left(180).penDown(); 
+    }
+
+    private Turtle jump(Turtle t, int i) {
+        return t.penUp().right(90).forward(i * 20).left(90).forward(40).penDown();
+    }
+
+    public void show() {                                                        //Zeichne das Spiel
+        turtle.reset();
+        turtle.penUp().left(90).forward(150).left(90).forward(150).left(90).penDown();//Startposition
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < rows[i]; j++) {
+                holz(turtle);
+            }
+            jump(turtle, rows[i]);
+        }
     }
 }
 
