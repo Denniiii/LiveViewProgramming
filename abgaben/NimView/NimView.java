@@ -3,8 +3,6 @@
 //
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.stream.IntStream;
 
@@ -46,61 +44,17 @@ Mit diesen Fragen kann man in der JShell Objekte mit dem Befehl: `.equals(**Obje
 
 Die Klasse NimView erweitert Nim und erstellt zuerst eine Turtle-Leinwand, wenn eine Nim-Spiel gestartet wird, danach kann man mit `.show()` den aktuellen Spielstand anzeigen lassen.
 
+```java	
+\{Text.cutOut("./Nim.java", "// view")}
+```
         
 """);
-
-// hashCode
-@Override
-boolean swapped;
-        do {
-            swapped = false;
-            for (int i = 0; i < sortedRows.length - 1; i++) {                   //Sortiere aufsteigend bsp. 1 2 3 4 (QuickSort)
-                if (sortedRows[i] > sortedRows[i + 1]) {
-                    int temp = sortedRows[i];
-                    sortedRows[i] = sortedRows[i + 1];
-                    sortedRows[i + 1] = temp;
-                    swapped = true;
-                }
-            }
-        } while (swapped);
-        int hash = 0;                                                           //Hashwert intialisieren
-        for (int i = 0; i < sortedRows.length; i++) {                           //Berechne den Hashwert
-            hash += sortedRows[i] * Math.pow(10, i);                            //Nutze die Zehnerpotenz um die Reihenfolge zu speichern
-        }
-        return hash;
-// hashCode
 
 
 /*-------------------------------------------------------------------------------------------------------------------------------*/
 
 
 // Eigentlicher Code 
-
-class NimView extends Nim {
-    Turtle turtle = new Turtle(400, 400);
-    public NimView(int... rows) {
-        super(rows);
-    }
-
-    private Turtle holz(Turtle t) {                                                     //Streichholz zeichnen und zum nächsten Anfang gehen
-        return t.forward(20).penUp().left(90).forward(20).left(90).forward(20).left(180).penDown(); 
-    } 
-
-    private Turtle jump(Turtle t, int i) {
-        return t.penUp().right(90).forward(i * 20).left(90).forward(40).penDown();
-    }
-
-    public void show() {
-        turtle.reset();
-        turtle.penUp().left(90).forward(150).left(90).forward(150).left(90).penDown();//Startposition
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < rows[i]; j++) {
-                holz(turtle);
-            }
-            jump(turtle, rows[i]);
-        }
-    }
-}
 
 class Move {
     final int row, number;
@@ -138,8 +92,9 @@ class Nim implements NimGame {
     public static Nim of(int... rows) {
         return new Nim(rows);
     }
-    protected Nim(int... rows) {
-        if (rows.length > 5 || Arrays.stream(rows).anyMatch(n -> n < 0 || n > 7)) {     //Hier soll man nur eine gewisse anzahl an Streichholz"reihen" und "Streichhölzer" benutzen dürfen
+    public Nim(int ... rows) {
+        if (rows.length > 5 || Arrays.stream(rows).anyMatch(n -> n < 0 || n > 7)) {
+            //Hier soll man nur eine gewisse anzahl an Streichholz"reihen" und "Streichhölzer" benutzen dürfen
             throw new IllegalArgumentException("Ein Nim-Spiel enthält maximal fünf Reihen und jede Reihe hat maximal sieben 'Streichhölzer'.");
         }
         assert rows.length >= 1;
@@ -179,21 +134,10 @@ class Nim implements NimGame {
     public boolean isGameOver() {
         return Arrays.stream(rows).allMatch(n -> n == 0);
     }
-
     public String toString() {
         String s = "";
         for(int n : rows) s += "\n" + "I ".repeat(n);
         return s;
-    }
-
-    public static List<Move> possibleMoves(Nim nim) { //Muss noch bearbeitet werden
-        List<Move> possibleMoves = new ArrayList<>();
-        for (int row = 0; row < nim.rows.length; row++) {
-            for (int number = 1; number <= nim.rows[row]; number++) {
-                possibleMoves.add(Move.of(row, number));
-            }
-        }
-        return possibleMoves;
     }
 
     @Override
@@ -201,10 +145,11 @@ class Nim implements NimGame {
         if (other == null) return false;                                        //Null abweheren!   - Nullfalschig
         if (other == this) return true;                                         //Bin ich es selbst?- Ich ja
         if (other.getClass() != getClass()) return false;                       //Andere Klasse?    - Klasse gleich?
-        Nim that = (Nim)other;                                                  //Casting           - 
+        Nim nim = (Nim) other;                                                  //Casten
         return this.hashCode() == other.hashCode();                             //Vergleichen
     }
 
+    // hashCode
     @Override
     public int hashCode() {
         int sortedRows[] = new int[rows.length];                                //Kopiere das Array
@@ -214,7 +159,7 @@ class Nim implements NimGame {
         boolean swapped;
         do {
             swapped = false;
-            for (int i = 0; i < sortedRows.length - 1; i++) {                       //Sortiere aufsteigend bsp. 1 2 3 4 (QuickSort)
+            for (int i = 0; i < sortedRows.length - 1; i++) {                   //Sortiere aufsteigend bsp. 1 2 3 4 (QuickSort)
                 if (sortedRows[i] > sortedRows[i + 1]) {
                     int temp = sortedRows[i];
                     sortedRows[i] = sortedRows[i + 1];
@@ -229,10 +174,44 @@ class Nim implements NimGame {
         }
         return hash;
     }
+    // hashCode
+
+    public NimView view() {
+
+    }
 }
 
-//Nim nim = Nim.of(2,3,4);
-//assert nim != nim.play(Move.of(1,2)) : "Return a new Nim instance";
+// view
+class NimView extends Nim {
+    private Turtle turtle = new Turtle(400, 400);
+    
+    NimView(int... rows) {
+        super(rows);
+    }
+
+    private Turtle holz(Turtle t) {                                             //Streichholz zeichnen und zum nächsten Anfang gehen
+        return t.forward(20).penUp().left(90).forward(20).left(90).forward(20).left(180).penDown(); 
+    }
+
+    private Turtle jump(Turtle t, int i) {
+        return t.penUp().right(90).forward(i * 20).left(90).forward(40).penDown();
+    }
+
+    public void show() {                                                        //Zeichne das Spiel
+        turtle.reset();
+        turtle.penUp().left(90).forward(150).left(90).forward(150).left(90).penDown();//Startposition
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < rows[i]; j++) {
+                holz(turtle);
+            }
+            jump(turtle, rows[i]);
+        }
+    }
+}
+// view
+
+// Nim nim = Nim.of(2,3,4);
+// assert nim != nim.play(Move.of(1,2)) : "Return a new Nim instance";
 
 int[] randomSetup(int... maxN) {
     Random r = new Random();
